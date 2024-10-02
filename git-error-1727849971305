@@ -1,0 +1,6 @@
+> git pull --tags origin main
+git: 'credential-manager' is not a git command. See 'git --help'.
+git: 'credential-manager' is not a git command. See 'git --help'.
+From https://github.com/devnumber7/SMARTHub
+ * branch            main       -> FETCH_HEAD
+fatal: Not possible to fast-forward, aborting.
