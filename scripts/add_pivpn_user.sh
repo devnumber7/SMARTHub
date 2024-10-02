@@ -27,9 +27,8 @@ fi
 # Add the VPN user using PiVPN
 # The '-n' flag specifies the username
 # The '-y' flag auto-confirms prompts if supported
-# Note: Adjust flags based on your PiVPN version and requirements
 echo "Adding VPN user: $USERNAME"
-pivpn add -n "$USERNAME" -y
+pivpn add -n "$USERNAME" || { echo "ERROR: Failed to add VPN user"; exit 1; }
 
 # Check if the user was added successfully
 if pivpn list | grep -qw "$USERNAME"; then
