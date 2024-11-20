@@ -6,7 +6,8 @@ import logging
 def toggle_bluetooth(current_status):
     """
     Toggles Bluetooth on or off based on the current status.
-    Returns the new status (True for on, False for off).
+
+    @return Returns the new status (True for on, False for off).
     """
     try:
         if current_status:
@@ -25,10 +26,11 @@ def toggle_bluetooth(current_status):
 def get_bluetooth_status():
     """
     Checks if Bluetooth is currently on or off.
-    Returns True if on, False if off.
+    @return Returns True if on, False if off.
     """
     result = subprocess.run(['rfkill', 'list', 'bluetooth'], capture_output=True, text=True)
     if 'Soft blocked: yes' in result.stdout or 'Hard blocked: yes' in result.stdout:
         return False
     else:
         return True
+    

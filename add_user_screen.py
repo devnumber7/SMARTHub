@@ -19,6 +19,11 @@ class AddUserScreen(Screen):
     Add User Screen with input for VPN username and navigation buttons.
     """
     def __init__(self, **kwargs):
+        """
+        Initializes the AddUserScreen with a UserManager and QRCodeGenerator backend, and builds the UI elements.
+
+        :param kwargs: Additional keyword arguments to pass to the parent class.
+        """
         super(AddUserScreen, self).__init__(**kwargs)
 
         # Initialize the backends

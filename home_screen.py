@@ -29,6 +29,9 @@ class HomeScreen(Screen):
     Home Screen with navigation buttons, a real-time clock, and a settings icon.
     """
     def __init__(self, **kwargs):
+        """
+        Initializes the HomeScreen with a UserManager backend, a custom font, and all the UI elements.
+        """
         super(HomeScreen, self).__init__(**kwargs)
 
         # Initialize the backend
@@ -48,49 +51,76 @@ class HomeScreen(Screen):
         self.layout = FloatLayout()
 
         # Create the main vertical BoxLayout for content
-        main_box = BoxLayout(orientation='vertical', padding=50, spacing=20,
-                             size_hint=(1, 1), pos_hint={'center_x': 0.5, 'center_y': 0.5})
+        main_box = BoxLayout(
+            orientation='vertical',
+            padding=[60, 40, 60, 40],  # [left, top, right, bottom]
+            spacing=30,
+            size_hint=(1, 0.8),
+            pos_hint={'center_x': 0.5, 'center_y': 0.5}
+        )
 
         # Add a welcome label
         welcome_label = Label(
             text='WELCOME TO SMART HUB',
-            font_size='24sp',
+            font_size='32sp',
             color=(1, 1, 1, 1),
-            size_hint=(1, 0.2),
-            font_name=font_path
+            size_hint=(1, None),
+            height=50,
+            font_name=font_path,
+            halign='center',
+            valign='middle'
         )
+        welcome_label.bind(size=welcome_label.setter('text_size'))
         main_box.add_widget(welcome_label)
 
-        # Add 'Add a User' button
-        add_user_button = Button(
-            text='Add a User',
-            size_hint=(0.4, 0.15),
-            pos_hint={'center_x': 0.5},
-            font_name=font_path
+        # Create a separate layout for buttons
+        button_layout = BoxLayout(
+            orientation='vertical',
+            spacing=20,
+            size_hint=(1, None)
         )
-        add_user_button.bind(on_press=self.navigate_to_add_user)
-        main_box.add_widget(add_user_button)
+        button_layout.bind(minimum_height=button_layout.setter('height'))
 
-        # Add 'Remove All Users' button
-        remove_all_button = Button(
-            text='Remove All Users',
-            size_hint=(0.4, 0.15),
-            pos_hint={'center_x': 0.5},
-            background_color=(1, 0, 0, 1),  # Red color
-            font_name=font_path
-        )
-        remove_all_button.bind(on_press=self.confirm_remove_all)
-        main_box.add_widget(remove_all_button)
+        # Button size settings
+        button_size_hint = (1, None)
+        button_height = 30
 
-        # Add 'Show Active VPN Connections' button
-        show_active_vpn_button = Button(
-            text='Show Active VPN Connections',
-            size_hint=(0.6, 0.15),
-            pos_hint={'center_x': 0.5},
-            font_name=font_path
-        )
-        show_active_vpn_button.bind(on_press=self.navigate_to_active_vpn)
-        main_box.add_widget(show_active_vpn_button)
+        # Create buttons with appropriate sizing and spacing
+        buttons = [
+            {
+                'text': 'Display Devices',
+                'on_press': self.navigate_to_display_devices
+            },
+            {
+                'text': 'Add a User',
+                'on_press': self.navigate_to_add_user
+            },
+            {
+                'text': 'Remove All Users',
+                'on_press': self.confirm_remove_all,
+                'background_color': (1, 0, 0, 1)  # Red color
+            },
+            {
+                'text': 'Show Active VPN Connections',
+                'on_press': self.navigate_to_active_vpn
+            }
+        ]
+
+        for btn_info in buttons:
+            btn = Button(
+                text=btn_info['text'],
+                size_hint=button_size_hint,
+                height=button_height,
+                font_size='8sp',
+                font_name=font_path
+            )
+            if 'background_color' in btn_info:
+                btn.background_color = btn_info['background_color']
+            btn.bind(on_press=btn_info['on_press'])
+            button_layout.add_widget(btn)
+
+        # Add the button layout to the main box
+        main_box.add_widget(button_layout)
 
         # Add the main content BoxLayout to the FloatLayout
         self.layout.add_widget(main_box)
@@ -100,10 +130,14 @@ class HomeScreen(Screen):
             text=self.get_current_time(),  # Now safe to call get_current_time()
             font_size='20sp',
             color=(1, 1, 1, 1),
-            size_hint=(0.3, 0.1),
-            pos_hint={'right': 1, 'top': 1},
-            font_name=font_path
+            size_hint=(None, None),
+            size=(150, 40),
+            pos_hint={'right': 0.98, 'top': 0.98},
+            font_name=font_path,
+            halign='right',
+            valign='middle'
         )
+        self.clock_label.bind(size=self.clock_label.setter('text_size'))
         self.layout.add_widget(self.clock_label)
 
         # Add a semi-transparent background to the clock label
@@ -116,7 +150,8 @@ class HomeScreen(Screen):
         settings_icon_path = os.path.join(current_dir, 'images', 'settings_icon.png')  # Make sure this image exists
         self.settings_button = ImageButton(
             source=settings_icon_path,
-            size_hint=(0.1, 0.1),
+            size_hint=(None, None),
+            size=(40, 40),
             pos_hint={'x': 0.02, 'top': 0.98}
         )
         self.settings_button.bind(on_press=self.open_settings)
@@ -355,3 +390,11 @@ class HomeScreen(Screen):
         logging.debug("Navigating to ActiveVPNScreen")
         self.manager.transition = SlideTransition(direction="left")
         self.manager.current = 'active_vpn'
+
+    def navigate_to_display_devices(self, instance):
+        """
+        Navigates to the DisplayDevicesScreen.
+        """
+        logging.debug("Navigating to DisplayDevicesScreen")
+        self.manager.transition = SlideTransition(direction="left")
+        self.manager.current = 'display_devices'

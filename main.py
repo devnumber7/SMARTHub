@@ -6,10 +6,12 @@ from kivy.uix.screenmanager import ScreenManager, SlideTransition
 from kivy.core.window import Window
 import logging
 
+
 # Import the screens
 from home_screen import HomeScreen
 from add_user_screen import AddUserScreen
 from active_vpn_screen import ActiveVPNScreen
+from display_devices_screen import DisplayDevicesScreen
 
 # Ensure compatibility with the latest Kivy version
 kivy.require('2.0.0')
@@ -24,7 +26,7 @@ class SmartHubApp(App):
     def build(self):
         # Set the window size to 800x480 pixels
         Window.size = (800, 480)
-        Window.title = "SmartHub VPN Config Generator"
+        Window.title = "SmartHub App"
 
         # Initialize the ScreenManager with SlideTransition
         sm = ScreenManager(transition=SlideTransition())
@@ -33,11 +35,13 @@ class SmartHubApp(App):
         home_screen = HomeScreen(name='home')
         add_user_screen = AddUserScreen(name='add_user')
         active_vpn_screen = ActiveVPNScreen(name='active_vpn')
+        display_devices_screen = DisplayDevicesScreen(name='display_devices')
 
         # Add screens to the ScreenManager
         sm.add_widget(home_screen)
         sm.add_widget(add_user_screen)
         sm.add_widget(active_vpn_screen)
+        sm.add_widget(display_devices_screen)
 
         logging.debug("SmartHubApp built successfully with Home, AddUser, and ActiveVPN screens.")
 
