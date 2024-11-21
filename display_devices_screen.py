@@ -6,12 +6,17 @@ from kivy.uix.scrollview import ScrollView
 from kivy.uix.gridlayout import GridLayout
 import os
 
+from mariadb_connector import MariaDBConnector
+
 class DisplayDevicesScreen(Screen):
     """
     Screen to display a list of devices with their states (On/Off).
     """
     def __init__(self, **kwargs):
         super(DisplayDevicesScreen, self).__init__(**kwargs)
+
+        # Initialize the backend
+        self.connector = MariaDBConnector()
 
         # Path to the custom font
         current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -110,3 +115,8 @@ class DisplayDevicesScreen(Screen):
         """
         self.manager.transition = SlideTransition(direction='right')
         self.manager.current = 'home'
+
+
+
+
+
