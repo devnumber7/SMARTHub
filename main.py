@@ -1,11 +1,8 @@
-# main_app.py
-
 import kivy
 from kivy.app import App
 from kivy.uix.screenmanager import ScreenManager, SlideTransition
 from kivy.core.window import Window
 import logging
-
 
 # Import the screens
 from home_screen import HomeScreen
@@ -24,8 +21,11 @@ class SmartHubApp(App):
     Main application class managing the window and screen transitions.
     """
     def build(self):
-        # Set the window size to 800x480 pixels
-        Window.size = (800, 480)
+        # Enable full-screen mode
+        Window.fullscreen = 'auto'  # Use 'auto' or 'true' for full screen
+
+        # Optionally, set the window size for non-fullscreen debugging
+        # Window.size = (800, 480)
         Window.title = "SmartHub App"
 
         # Initialize the ScreenManager with SlideTransition

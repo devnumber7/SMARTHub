@@ -29,9 +29,6 @@ class HomeScreen(Screen):
     Home Screen with navigation buttons, a real-time clock, and a settings icon.
     """
     def __init__(self, **kwargs):
-        """
-        Initializes the HomeScreen with a UserManager backend, a custom font, and all the UI elements.
-        """
         super(HomeScreen, self).__init__(**kwargs)
 
         # Initialize the backend
@@ -41,97 +38,51 @@ class HomeScreen(Screen):
         current_dir = os.path.dirname(os.path.abspath(__file__))
         font_path = os.path.join(current_dir, 'fonts', 'SixtyFourConvergence.ttf')
 
-        # Initialize clock format BEFORE using it
+        # Initialize clock format and Bluetooth status
         self.use_24_hour = False
-
-        # Initialize Bluetooth status BEFORE using it
         self.bluetooth_status = get_bluetooth_status()
 
-        # Create the root FloatLayout
+        # Root layout
         self.layout = FloatLayout()
 
-        # Create the main vertical BoxLayout for content
-        main_box = BoxLayout(
+        # Button layout
+        button_layout = BoxLayout(
             orientation='vertical',
-            padding=[60, 40, 60, 40],  # [left, top, right, bottom]
-            spacing=30,
-            size_hint=(1, 0.8),
+            spacing=25,
+            size_hint=(0.6, 0.6),  # Reduced size for more spacing
             pos_hint={'center_x': 0.5, 'center_y': 0.5}
         )
 
-        # Add a welcome label
-        welcome_label = Label(
-            text='WELCOME TO SMART HUB',
-            font_size='32sp',
-            color=(1, 1, 1, 1),
-            size_hint=(1, None),
-            height=50,
-            font_name=font_path,
-            halign='center',
-            valign='middle'
-        )
-        welcome_label.bind(size=welcome_label.setter('text_size'))
-        main_box.add_widget(welcome_label)
-
-        # Create a separate layout for buttons
-        button_layout = BoxLayout(
-            orientation='vertical',
-            spacing=20,
-            size_hint=(1, None)
-        )
-        button_layout.bind(minimum_height=button_layout.setter('height'))
-
-        # Button size settings
-        button_size_hint = (1, None)
-        button_height = 30
-
-        # Create buttons with appropriate sizing and spacing
+        # Create buttons with transparent background
         buttons = [
-            {
-                'text': 'Display Devices',
-                'on_press': self.navigate_to_display_devices
-            },
-            {
-                'text': 'Add a User',
-                'on_press': self.navigate_to_add_user
-            },
-            {
-                'text': 'Remove All Users',
-                'on_press': self.confirm_remove_all,
-                'background_color': (1, 0, 0, 1)  # Red color
-            },
-            {
-                'text': 'Show Active VPN Connections',
-                'on_press': self.navigate_to_active_vpn
-            }
+            {'text': 'Display Devices', 'on_press': self.navigate_to_display_devices},
+            {'text': 'Add a User', 'on_press': self.navigate_to_add_user},
+            {'text': 'Remove All Users', 'on_press': self.confirm_remove_all},
+            {'text': 'Show Active VPN Connections', 'on_press': self.navigate_to_active_vpn}
         ]
 
         for btn_info in buttons:
             btn = Button(
                 text=btn_info['text'],
-                size_hint=button_size_hint,
-                height=button_height,
-                font_size='8sp',
-                font_name=font_path
+                size_hint=(1, None),
+                height=40,  # Compact height
+                font_size='20sp',
+                font_name=font_path,
+                background_color=(0, 0, 0, 0),  # Transparent background
+                color=(1, 1, 1, 1)  # White text
             )
-            if 'background_color' in btn_info:
-                btn.background_color = btn_info['background_color']
             btn.bind(on_press=btn_info['on_press'])
             button_layout.add_widget(btn)
 
-        # Add the button layout to the main box
-        main_box.add_widget(button_layout)
+        self.layout.add_widget(button_layout)
 
-        # Add the main content BoxLayout to the FloatLayout
-        self.layout.add_widget(main_box)
-
-        # Create a Label for the clock
+        # Clock label
         self.clock_label = Label(
-            text=self.get_current_time(),  # Now safe to call get_current_time()
-            font_size='20sp',
+            text=self.get_current_time(),
+            font_size='22sp',
             color=(1, 1, 1, 1),
             size_hint=(None, None),
-            size=(150, 40),
+            size=(180, 50),
             pos_hint={'right': 0.98, 'top': 0.98},
             font_name=font_path,
             halign='right',
@@ -140,18 +91,18 @@ class HomeScreen(Screen):
         self.clock_label.bind(size=self.clock_label.setter('text_size'))
         self.layout.add_widget(self.clock_label)
 
-        # Add a semi-transparent background to the clock label
+        # Add semi-transparent background to the clock
         with self.clock_label.canvas.before:
-            Color(0, 0, 0, 0.5)  # Semi-transparent black
+            Color(0, 0, 0, 0.4)  # Semi-transparent black
             self.clock_bg = Rectangle(size=self.clock_label.size, pos=self.clock_label.pos)
         self.clock_label.bind(size=self.update_clock_bg, pos=self.update_clock_bg)
 
-        # Add Settings Icon Button
-        settings_icon_path = os.path.join(current_dir, 'images', 'settings_icon.png')  # Make sure this image exists
+        # Settings icon
+        settings_icon_path = os.path.join(current_dir, 'images', 'settings_icon.png')
         self.settings_button = ImageButton(
             source=settings_icon_path,
             size_hint=(None, None),
-            size=(40, 40),
+            size=(40, 40),  # Compact size
             pos_hint={'x': 0.02, 'top': 0.98}
         )
         self.settings_button.bind(on_press=self.open_settings)
@@ -160,7 +111,7 @@ class HomeScreen(Screen):
         # Add the root layout to the screen
         self.add_widget(self.layout)
 
-        # Schedule the clock to update every second
+        # Schedule the clock update
         Clock.schedule_interval(self.update_clock, 1)
 
     def open_settings(self, instance):
