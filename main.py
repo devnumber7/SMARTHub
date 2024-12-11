@@ -9,6 +9,7 @@ from home_screen import HomeScreen
 from add_user_screen import AddUserScreen
 from active_vpn_screen import ActiveVPNScreen
 from display_devices_screen import DisplayDevicesScreen
+from settings_screen import SettingsScreen
 
 # Ensure compatibility with the latest Kivy version
 kivy.require('2.0.0')
@@ -36,12 +37,14 @@ class SmartHubApp(App):
         add_user_screen = AddUserScreen(name='add_user')
         active_vpn_screen = ActiveVPNScreen(name='active_vpn')
         display_devices_screen = DisplayDevicesScreen(name='display_devices')
+        settings_screen = SettingsScreen(name='settings')
 
         # Add screens to the ScreenManager
         sm.add_widget(home_screen)
         sm.add_widget(add_user_screen)
         sm.add_widget(active_vpn_screen)
         sm.add_widget(display_devices_screen)
+        sm.add_widget(settings_screen)
 
         logging.debug("SmartHubApp built successfully with Home, AddUser, and ActiveVPN screens.")
 

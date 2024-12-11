@@ -5,28 +5,27 @@ from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.label import Label
 from kivy.uix.button import Button, ButtonBehavior
-from kivy.uix.image import Image
 from kivy.uix.popup import Popup
 from kivy.graphics import Color, Rectangle
+from kivy.uix.image import Image
 import logging
 import os
-import threading
+
 from kivy.clock import Clock
 from datetime import datetime
 
 # Import the backend classes
 from user_management import UserManager  # User management backend
-from system_control import toggle_bluetooth, get_bluetooth_status  # System control backend
 
-class ImageButton(ButtonBehavior, Image):
+class SettingsButton(ButtonBehavior, Image):
     """
-    A custom widget combining ButtonBehavior and Image to create an image button.
+    A custom button with an image for the settings icon.
     """
     pass
 
 class HomeScreen(Screen):
     """
-    Home Screen with navigation buttons, a real-time clock, and a settings icon.
+    Home Screen with navigation buttons and a real-time clock.
     """
     def __init__(self, **kwargs):
         super(HomeScreen, self).__init__(**kwargs)
@@ -34,16 +33,26 @@ class HomeScreen(Screen):
         # Initialize the backend
         self.backend = UserManager()
 
-        # Path to the custom font
+        # Path to the custom font and images
         current_dir = os.path.dirname(os.path.abspath(__file__))
         font_path = os.path.join(current_dir, 'fonts', 'SixtyFourConvergence.ttf')
+        settings_icon_path = os.path.join(current_dir, 'images', 'settings.png')  # Ensure this path is correct
 
         # Initialize clock format and Bluetooth status
         self.use_24_hour = False
-        self.bluetooth_status = get_bluetooth_status()
 
         # Root layout
         self.layout = FloatLayout()
+
+        # Add the settings button
+        self.settings_button = SettingsButton(
+            source=settings_icon_path,
+            size_hint=(None, None),
+            size=(40, 40),  # Adjust size as needed
+            pos_hint={'x': 0.02, 'y': 0.876}  # Top-left corner with some padding
+        )
+        self.settings_button.bind(on_press=self.navigate_to_settings)
+        self.layout.add_widget(self.settings_button)
 
         # Button layout
         button_layout = BoxLayout(
@@ -97,92 +106,11 @@ class HomeScreen(Screen):
             self.clock_bg = Rectangle(size=self.clock_label.size, pos=self.clock_label.pos)
         self.clock_label.bind(size=self.update_clock_bg, pos=self.update_clock_bg)
 
-        # Settings icon
-        settings_icon_path = os.path.join(current_dir, 'images', 'settings_icon.png')
-        self.settings_button = ImageButton(
-            source=settings_icon_path,
-            size_hint=(None, None),
-            size=(40, 40),  # Compact size
-            pos_hint={'x': 0.02, 'top': 0.98}
-        )
-        self.settings_button.bind(on_press=self.open_settings)
-        self.layout.add_widget(self.settings_button)
-
         # Add the root layout to the screen
         self.add_widget(self.layout)
 
         # Schedule the clock update
         Clock.schedule_interval(self.update_clock, 1)
-
-    def open_settings(self, instance):
-        """
-        Opens the settings popup when the settings button is pressed.
-        """
-        # Create content for the settings popup
-        popup_content = BoxLayout(orientation='vertical', padding=20, spacing=20)
-
-        # Clock Format Toggle
-        clock_format_layout = BoxLayout(orientation='horizontal', spacing=10, size_hint=(1, 0.2))
-        clock_label = Label(
-            text='24-Hour Clock:',
-            font_size='18sp',
-            color=(1, 1, 1, 1),
-            font_name=os.path.join(os.path.dirname(os.path.abspath(__file__)), 'fonts', 'SixtyFourConvergence.ttf')
-        )
-        self.clock_switch = Button(
-            text='On' if self.use_24_hour else 'Off',
-            size_hint=(0.3, 1),
-            font_size='18sp'
-        )
-        self.clock_switch.bind(on_press=self.toggle_clock_format)
-        clock_format_layout.add_widget(clock_label)
-        clock_format_layout.add_widget(self.clock_switch)
-        popup_content.add_widget(clock_format_layout)
-
-        # Bluetooth Toggle
-        bluetooth_layout = BoxLayout(orientation='horizontal', spacing=10, size_hint=(1, 0.2))
-        bluetooth_label = Label(
-            text='Bluetooth:',
-            font_size='18sp',
-            color=(1, 1, 1, 1),
-            font_name=os.path.join(os.path.dirname(os.path.abspath(__file__)), 'fonts', 'SixtyFourConvergence.ttf')
-        )
-        self.bluetooth_button = Button(
-            text='On' if self.bluetooth_status else 'Off',
-            size_hint=(0.3, 1),
-            font_size='18sp'
-        )
-        self.bluetooth_button.bind(on_press=self.toggle_bluetooth)
-        bluetooth_layout.add_widget(bluetooth_label)
-        bluetooth_layout.add_widget(self.bluetooth_button)
-        popup_content.add_widget(bluetooth_layout)
-
-        # Close Button
-        close_button = Button(
-            text='Close',
-            size_hint=(1, 0.2),
-            font_size='18sp',
-            font_name=os.path.join(os.path.dirname(os.path.abspath(__file__)), 'fonts', 'SixtyFourConvergence.ttf')
-        )
-        close_button.bind(on_press=lambda x: self.settings_popup.dismiss())
-        popup_content.add_widget(close_button)
-
-        # Create the popup
-        self.settings_popup = Popup(
-            title='Settings',
-            content=popup_content,
-            size_hint=(0.8, 0.6)
-        )
-
-        self.settings_popup.open()
-
-    def toggle_clock_format(self, instance):
-        """
-        Toggles the clock format between 12-hour and 24-hour.
-        """
-        self.use_24_hour = not self.use_24_hour
-        self.clock_switch.text = 'On' if self.use_24_hour else 'Off'
-        self.update_clock(0)
 
     def get_current_time(self):
         """
@@ -205,18 +133,6 @@ class HomeScreen(Screen):
         """
         self.clock_bg.size = self.clock_label.size
         self.clock_bg.pos = self.clock_label.pos
-
-    def toggle_bluetooth(self, instance):
-        """
-        Toggles Bluetooth on/off.
-        """
-        # Use the backend function to toggle Bluetooth
-        new_status = toggle_bluetooth(self.bluetooth_status)
-        if new_status is not None:
-            self.bluetooth_status = new_status
-            self.bluetooth_button.text = 'On' if self.bluetooth_status else 'Off'
-        else:
-            self.display_message('Error', 'Failed to toggle Bluetooth. Please check permissions.')
 
     def navigate_to_add_user(self, instance):
         """
@@ -275,64 +191,28 @@ class HomeScreen(Screen):
 
     def remove_all_users(self, instance):
         """
-        Calls the backend to remove all VPN users and displays the result.
+        Removes all users using the backend.
         """
-        logging.debug("Initiating removal of all VPN users")
-        # Disable the button to prevent multiple clicks
-        instance.disabled = True
-        # Start the removal process in a separate thread
-        threading.Thread(target=self.process_remove_all_users, args=(instance,), daemon=True).start()
-
-    def process_remove_all_users(self, button_instance):
-        """
-        Processes the removal of all VPN users.
-        Runs in a separate thread to prevent UI blocking.
-        """
-        result = self.backend.remove_all_users()
-        # Schedule the UI update on the main thread
-        Clock.schedule_once(lambda dt: self.handle_remove_all_response(result, button_instance), 0)
-
-    def handle_remove_all_response(self, result, button_instance):
-        """
-        Handles the response from the backend after attempting to remove all users.
-        """
-        # Re-enable the button
-        button_instance.disabled = False
-
-        if result['success']:
-            self.display_message('Success', result['message'])
+        logging.debug("Removing all users")
+        success = self.backend.remove_all_users()
+        if success:
+            logging.info("All users have been removed successfully.")
+            # Optionally, show a success popup
+            popup = Popup(
+                title='Success',
+                content=Label(text='All VPN users have been removed.'),
+                size_hint=(0.6, 0.4)
+            )
+            popup.open()
         else:
-            self.display_message('Error', result['message'])
-
-    def display_message(self, title, message):
-        """
-        Displays a popup with the given title and message.
-        """
-        popup_content = BoxLayout(orientation='vertical', padding=20, spacing=20)
-        message_label = Label(
-            text=message,
-            font_size='18sp',
-            halign='center',
-            valign='middle'
-        )
-        message_label.bind(size=message_label.setter('text_size'))
-        popup_content.add_widget(message_label)
-
-        close_button = Button(
-            text='Close',
-            size_hint=(1, 0.3),
-            font_size='18sp'
-        )
-        popup_content.add_widget(close_button)
-
-        popup = Popup(
-            title=title,
-            content=popup_content,
-            size_hint=(0.8, 0.5)
-        )
-
-        close_button.bind(on_press=popup.dismiss)
-        popup.open()
+            logging.error("Failed to remove all users.")
+            # Optionally, show an error popup
+            popup = Popup(
+                title='Error',
+                content=Label(text='Failed to remove all VPN users.'),
+                size_hint=(0.6, 0.4)
+            )
+            popup.open()
 
     def navigate_to_active_vpn(self, instance):
         """
@@ -349,3 +229,11 @@ class HomeScreen(Screen):
         logging.debug("Navigating to DisplayDevicesScreen")
         self.manager.transition = SlideTransition(direction="left")
         self.manager.current = 'display_devices'
+
+    def navigate_to_settings(self, instance):
+        """
+        Navigates to the SettingsScreen.
+        """
+        logging.debug("Navigating to SettingsScreen")
+        self.manager.transition = SlideTransition(direction="right")
+        self.manager.current = 'settings'
